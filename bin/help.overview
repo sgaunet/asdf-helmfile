@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# Display plugin overview and basic usage information
+
+cat <<EOF
+asdf-helmfile Plugin
+
+Helmfile is a declarative spec for deploying Helm charts. It lets you keep a directory of chart value files and maintain changes in version control.
+
+Plugin repository: https://github.com/sgaunet/asdf-helmfile
+Helmfile repository:   https://github.com/helmfile/helmfile
+Helmfile website:      https://helmfile.readthedocs.io
+
+BASIC USAGE:
+
+  Install the plugin:
+    asdf plugin add helmfile
+    # or
+    asdf plugin add helmfile https://github.com/sgaunet/asdf-helmfile.git
+
+  Install a version:
+    asdf install helmfile latest   # Install latest stable version
+    asdf install helmfile 0.157.0  # Install specific version
+
+  Set a version:
+    asdf global helmfile latest    # Set globally
+    asdf local helmfile 0.157.0    # Set for current directory
+
+  List versions:
+    asdf list helmfile             # List installed versions
+    asdf list-all helmfile         # List all available versions
+
+ENVIRONMENT VARIABLES:
+
+  ASDF_HELMFILE_DEBUG=1           Enable debug output
+  ASDF_HELMFILE_MAX_RETRIES=3     Max retry attempts for network operations
+  ASDF_HELMFILE_RETRY_DELAY=2     Delay in seconds between retries
+  GITHUB_API_TOKEN=<token>        GitHub token for higher API rate limits
+
+TROUBLESHOOTING:
+
+  Enable debug mode:
+    export ASDF_HELMFILE_DEBUG=1
+    asdf install helmfile latest
+
+  If you encounter rate limiting:
+    export GITHUB_API_TOKEN=your_github_token
+    asdf install helmfile latest
+
+For more help, see:
+  https://github.com/sgaunet/asdf-helmfile
+  https://asdf-vm.com
+EOF

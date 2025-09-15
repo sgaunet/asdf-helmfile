@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+# Display useful links and resources
+
+cat <<EOF
+asdf-helmfile Plugin - Useful Links
+
+DOCUMENTATION:
+
+  Helmfile Documentation:
+    https://helmfile.readthedocs.io
+
+  Helmfile GitHub Repository:
+    https://github.com/helmfile/helmfile
+
+  Plugin Repository:
+    https://github.com/sgaunet/asdf-helmfile
+
+  asdf Documentation:
+    https://asdf-vm.com
+
+GETTING STARTED:
+
+  Helmfile Quick Start:
+    https://helmfile.readthedocs.io/en/latest/#getting-started
+
+  Helmfile Installation Guide:
+    https://helmfile.readthedocs.io/en/latest/installation/
+
+  Helmfile Usage Guide:
+    https://helmfile.readthedocs.io/en/latest/writing-helmfile/
+
+  Helmfile Configuration Reference:
+    https://helmfile.readthedocs.io/en/latest/helmfile-spec/
+
+EXAMPLES & TUTORIALS:
+
+  Helmfile Examples:
+    https://github.com/helmfile/helmfile/tree/master/examples
+
+  Helmfile Schema:
+    https://helmfile.readthedocs.io/en/latest/helmfile-spec/
+
+  Community Helmfiles:
+    https://github.com/topics/helmfile
+
+SUPPORT:
+
+  Helmfile Discussions:
+    https://github.com/helmfile/helmfile/discussions
+
+  Helmfile Issues:
+    https://github.com/helmfile/helmfile/issues
+
+  Plugin Issues:
+    https://github.com/sgaunet/asdf-helmfile/issues
+
+  asdf Issues:
+    https://github.com/asdf-vm/asdf/issues
+
+CONTRIBUTING:
+
+  Contributing to Helmfile:
+    https://github.com/helmfile/helmfile/blob/master/CONTRIBUTING.md
+
+  Contributing to Plugin:
+    See README.md in the plugin repository
+EOF
