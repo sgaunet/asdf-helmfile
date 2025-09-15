@@ -119,10 +119,19 @@ post_install_validation() {
 
 main() {
 	local install_type="$ASDF_INSTALL_TYPE"
-	local version="$ASDF_INSTALL_VERSION"
+	local input_version="$ASDF_INSTALL_VERSION"
 	local install_path="$ASDF_INSTALL_PATH"
+	local resolved_version
 
-	info "Installing $TOOL_NAME $version..."
+	info "Installing $TOOL_NAME $input_version..."
+
+	# Resolve version for validation (handles "latest" -> actual version)
+	resolved_version=$(resolve_version "$input_version")
+
+	if [[ "$input_version" != "$resolved_version" ]]; then
+		info "Resolved version $input_version to $resolved_version"
+	fi
+
 	debug_log "Install type: $install_type"
 	debug_log "Install path: $install_path"
 	debug_log "Download path: ${DOWNLOAD_PATH:-<not set>}"
@@ -143,10 +152,10 @@ main() {
 	fi
 
 	# Perform the installation
-	install_version "$install_type" "$version" "$install_path"
+	install_version "$install_type" "$input_version" "$install_path"
 
 	# Post-installation validation
-	if ! post_install_validation "$install_path/bin" "$version"; then
+	if ! post_install_validation "$install_path/bin" "$resolved_version"; then
 		fail "Post-installation validation failed"
 	fi
 
@@ -154,7 +163,7 @@ main() {
 	create_convenience_symlinks "$install_path/bin"
 
 	info "Installation completed successfully!"
-	info "You can now use: asdf global $TOOL_NAME $version"
+	info "You can now use: asdf global $TOOL_NAME $input_version"
 }
 
 # ============================================================================
