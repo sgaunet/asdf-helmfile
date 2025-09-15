@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+# Exit on error, undefined variable, or pipe failure
+set -euo pipefail
+
+# ============================================================================
+# Script Setup
+# ============================================================================
+
+# Get the directory of this script and the plugin root
+current_script_path=${BASH_SOURCE[0]}
+plugin_dir=$(dirname "$(dirname "$current_script_path")")
+
+# Source shared utility functions
+# shellcheck source=./lib/utils.bash
+source "${plugin_dir}/lib/utils.bash"
+
+# ============================================================================
+# Environment Configuration
+# ============================================================================
+
+# Set Helmfile-specific environment variables
+# This script is called by asdf before executing the tool
+main() {
+	# Get the installation path
+	local install_path="${ASDF_INSTALL_PATH:-}"
+
+	if [[ -z "$install_path" ]]; then
+		debug_log "ASDF_INSTALL_PATH not set, exec-env running in check mode"
+		return 0
+	fi
+
+	debug_log "Setting environment for $TOOL_NAME at $install_path"
+
+	# Set Helmfile-specific environment variables
+	# These are optional but enhance functionality
+
+	# Enable colored output if terminal supports it
+	if [[ -t 1 ]] && [[ -t 2 ]]; then
+		export HELMFILE_COLOR=true
+		debug_log "Enabled colored output for Helmfile"
+	fi
+
+	# Set default Helm binary path if not set
+	# Helmfile will use this to execute Helm commands
+	if [[ -z "${HELM_BIN:-}" ]] && command -v helm >/dev/null 2>&1; then
+		export HELM_BIN="$(command -v helm)"
+		debug_log "Set Helm binary path to $HELM_BIN"
+	fi
+
+	# Set default Helmfile configuration directory
+	# This is where Helmfile looks for helmfile.yaml by default
+	# export HELMFILE_FILE="helmfile.yaml"
+
+	# Enable debug mode for Helmfile (only if ASDF_HELMFILE_DEBUG is set)
+	if [[ "${ASDF_HELMFILE_DEBUG:-0}" == "1" ]]; then
+		export HELMFILE_DEBUG=true
+		debug_log "Enabled debug mode for Helmfile"
+	fi
+
+	# Set concurrency level for Helmfile operations
+	if [[ -z "${HELMFILE_CONCURRENCY:-}" ]]; then
+		if command -v nproc >/dev/null 2>&1; then
+			# Linux
+			export HELMFILE_CONCURRENCY=$(nproc)
+		elif command -v sysctl >/dev/null 2>&1; then
+			# macOS
+			export HELMFILE_CONCURRENCY=$(sysctl -n hw.ncpu)
+		else
+			# Default to 4 if we can't detect
+			export HELMFILE_CONCURRENCY=4
+		fi
+		debug_log "Set Helmfile concurrency to $HELMFILE_CONCURRENCY"
+	fi
+
+	# Set Helmfile cache directory
+	if [[ -z "${HELMFILE_CACHE_HOME:-}" ]]; then
+		export HELMFILE_CACHE_HOME="${HOME}/.cache/helmfile"
+		debug_log "Set Helmfile cache directory to $HELMFILE_CACHE_HOME"
+	fi
+
+	# Set Helmfile data directory
+	if [[ -z "${HELMFILE_DATA_HOME:-}" ]]; then
+		export HELMFILE_DATA_HOME="${HOME}/.local/share/helmfile"
+		debug_log "Set Helmfile data directory to $HELMFILE_DATA_HOME"
+	fi
+
+	debug_log "Helmfile environment configuration completed"
+}
+
+# ============================================================================
+# Script Execution
+# ============================================================================
+
+# Run main function
+main "$@"
