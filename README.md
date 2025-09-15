@@ -1,8 +1,6 @@
 # asdf-helmfile
 
 [![Build](https://github.com/sgaunet/asdf-helmfile/actions/workflows/build.yml/badge.svg)](https://github.com/sgaunet/asdf-helmfile/actions/workflows/build.yml)
-[![Lint](https://github.com/sgaunet/asdf-helmfile/actions/workflows/lint.yml/badge.svg)](https://github.com/sgaunet/asdf-helmfile/actions/workflows/lint.yml)
-
 [Helmfile](https://github.com/helmfile/helmfile) plugin for the [asdf version manager](https://asdf-vm.com).
 
 Helmfile is a declarative spec for deploying Helm charts. It lets you keep a directory of chart value files and maintain changes in version control.
