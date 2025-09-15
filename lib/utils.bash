@@ -150,12 +150,66 @@ list_all_versions() {
 validate_version() {
 	local version="$1"
 
+	# Accept "latest" as a special case
+	if [[ "$version" == "latest" ]]; then
+		return 0
+	fi
+
 	# Check basic semantic version pattern
 	if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?$ ]]; then
 		return 1
 	fi
 
 	return 0
+}
+
+# Resolve version string to actual version number
+# Arguments:
+#   $1 - Version string (can be "latest" or specific version)
+# Returns:
+#   Resolved version number to stdout
+resolve_version() {
+	local version="$1"
+
+	# If version is "latest", resolve it to actual latest version
+	if [[ "$version" == "latest" ]]; then
+		# Use the latest-stable script functionality
+		local api_url="https://api.github.com/repos/helmfile/helmfile/releases/latest"
+		local resolved_version
+
+		debug_log "Resolving 'latest' version from GitHub API"
+
+		# Build curl options for API request
+		build_curl_opts
+		if [[ -n "${GITHUB_API_TOKEN:-}" ]]; then
+			curl_opts+=(-H "Authorization: token $GITHUB_API_TOKEN")
+		fi
+
+		# Fetch latest version from GitHub API
+		if resolved_version=$(curl "${curl_opts[@]}" "$api_url" 2>/dev/null | grep '"tag_name":' | cut -d'"' -f4 | sed 's/^v//'); then
+			if [[ -n "$resolved_version" ]]; then
+				debug_log "Resolved 'latest' to version: $resolved_version"
+				echo "$resolved_version"
+				return 0
+			fi
+		fi
+
+		# Fallback: try to get latest from bin/latest-stable script
+		local plugin_dir
+		plugin_dir=$(dirname "$(dirname "${BASH_SOURCE[0]}")")
+		if [[ -x "$plugin_dir/bin/latest-stable" ]]; then
+			if resolved_version=$("$plugin_dir/bin/latest-stable" 2>/dev/null); then
+				debug_log "Resolved 'latest' to version (fallback): $resolved_version"
+				echo "$resolved_version"
+				return 0
+			fi
+		fi
+
+		fail "Could not resolve 'latest' version. Please check your internet connection and GitHub access."
+	else
+		# Return the version as-is
+		echo "$version"
+	fi
 }
 
 # ============================================================================
@@ -315,14 +369,17 @@ verify_checksum() {
 # Returns:
 #   0 on success, exits on failure
 download_release() {
-	local version="$1"
+	local input_version="$1"
 	local filename="$2"
-	local os arch url
+	local version os arch url
 
 	# Validate version format
-	if ! validate_version "$version"; then
-		fail "Invalid version format: $version"
+	if ! validate_version "$input_version"; then
+		fail "Invalid version format: $input_version"
 	fi
+
+	# Resolve version (handles "latest" -> actual version)
+	version=$(resolve_version "$input_version")
 
 	os="$(get_os)"
 	arch="$(get_arch)"
@@ -365,8 +422,9 @@ download_release() {
 #   0 on success, exits on failure
 install_version() {
 	local install_type="$1"
-	local version="$2"
+	local input_version="$2"
 	local install_path="${3%/bin}/bin"
+	local version
 
 	# Validate installation type
 	if [[ "$install_type" != "version" ]]; then
@@ -374,9 +432,12 @@ install_version() {
 	fi
 
 	# Validate version
-	if ! validate_version "$version"; then
-		fail "Invalid version format: $version"
+	if ! validate_version "$input_version"; then
+		fail "Invalid version format: $input_version"
 	fi
+
+	# Resolve version (handles "latest" -> actual version)
+	version=$(resolve_version "$input_version")
 
 	debug_log "Installing $TOOL_NAME $version to $install_path"
 

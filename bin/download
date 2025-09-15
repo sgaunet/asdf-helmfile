@@ -33,11 +33,18 @@ fi
 # ============================================================================
 
 main() {
-	local version="$ASDF_INSTALL_VERSION"
+	local input_version="$ASDF_INSTALL_VERSION"
 	local download_path="$ASDF_DOWNLOAD_PATH"
-	local os arch release_file
+	local version os arch release_file
 
-	info "Preparing to download $TOOL_NAME version $version"
+	info "Preparing to download $TOOL_NAME version $input_version"
+
+	# Resolve version (handles "latest" -> actual version)
+	version=$(resolve_version "$input_version")
+
+	if [[ "$input_version" != "$version" ]]; then
+		info "Resolved version $input_version to $version"
+	fi
 
 	# Create download directory
 	debug_log "Creating download directory: $download_path"
